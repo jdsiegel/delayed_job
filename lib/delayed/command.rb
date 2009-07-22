@@ -5,9 +5,11 @@ require 'optparse'
 module Delayed
   class Command
     attr_accessor :worker_count
+
+    DEFAULT_SCHEDULE_PATH = "#{RAILS_ROOT}/config/delayed_schedule.rb"
     
     def initialize(args)
-      @options = {:quiet => true}
+      @options = {:quiet => true, :schedule => DEFAULT_SCHEDULE_PATH}
       @worker_count = 1
       
       opts = OptionParser.new do |opts|
@@ -26,6 +28,9 @@ module Delayed
         opts.on('--max-priority N', 'Maximum priority of jobs to run.') do |n|
           @options[:max_priority] = n
         end
+        opts.on('--disable-schedule', 'Turn off cron-like behavior for scheduling repeatable jobs') do
+          @options[:disable_schedule] = true
+        end
         opts.on('-n', '--number_of_workers=workers', "Number of unique workers to spawn") do |worker_count|
           @worker_count = worker_count.to_i rescue 1
         end
@@ -36,13 +41,14 @@ module Delayed
     def daemonize
       worker_count.times do |worker_index|
         process_name = worker_count == 1 ? "delayed_job" : "delayed_job.#{worker_index}"
+        use_scheduled_worker = worker_index == 0 && !@options[:disable_schedule]
         Daemons.run_proc(process_name, :dir => "#{RAILS_ROOT}/tmp/pids", :dir_mode => :normal, :ARGV => @args) do |*args|
-          run process_name
+          run process_name, use_scheduled_worker
         end
       end
     end
     
-    def run(worker_name = nil)
+    def run(worker_name = nil, use_scheduled_worker=true)
       Dir.chdir(RAILS_ROOT)
       require File.join(RAILS_ROOT, 'config', 'environment')
       
@@ -54,7 +60,8 @@ module Delayed
       Delayed::Worker.logger = logger
       Delayed::Job.worker_name = "#{worker_name} #{Delayed::Job.worker_name}"
       
-      Delayed::Worker.new(@options).start  
+      worker_class = use_scheduled_worker ? Delayed::ScheduledWorker : Delayed::Worker
+      worker_class.new(@options).start
     rescue => e
       logger.fatal e
       STDERR.puts e.message

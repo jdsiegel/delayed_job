@@ -74,7 +74,7 @@ module Delayed
         self.unlock
         save!
       else
-        logger.info "* [JOB] PERMANENTLY removing #{self.name} because of #{attempts} consequetive failures."
+        logger.info "* [JOB] PERMANENTLY removing #{self.name} because of #{attempts} consecutive failures."
         destroy_failed_jobs ? destroy : update_attribute(:failed_at, Time.now)
       end
     end
