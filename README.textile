@@ -1,6 +1,6 @@
 h1. Delayed::Job
 
-Delated_job (or DJ) encapsulates the common pattern of asynchronously executing longer tasks in the background. 
+Delayed_job (or DJ) encapsulates the common pattern of asynchronously executing longer tasks in the background. 
 
 It is a direct extraction from Shopify where the job table is responsible for a multitude of core tasks. Amongst those tasks are:
 
@@ -11,6 +11,17 @@ It is a direct extraction from Shopify where the job table is responsible for a 
 * updating solr, our search server, after product changes
 * batch imports 
 * spam checks 
+
+h2. Changes in this fork (jdsiegel/delayed_job)
+
+This fork adds a new basic @Delayed::ScheduledWorker@ class that will queue repeatable jobs at regular intervals. Scheduled jobs are specified in @$RAILS_ROOT/config/delayed_schedule.rb@:
+
+  every 30.seconds, :run => 'Poller.refresh_data'
+  every 20.minutes, :run => 'Report.update_stats'
+
+To disable the job schedule, you can start delayed job with @script/delayed_job --disable-schedule start@.
+
+Note that this is a simple implementation suited best for repeating tasks with small intervals. For larger intervals or more complicated cron-like recurrence rules, it is better to use cron and @script/runner@.
             
 h2. Setup
             
