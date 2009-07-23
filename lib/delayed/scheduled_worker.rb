@@ -7,7 +7,7 @@ module Delayed
     def initialize(options={})
       super(options)
       @schedule_file = options[:schedule] || "schedule.rb"
-      @schedule = Schedule.new
+      @schedule = Schedule.new(logger)
     end
 
     def load_schedule
@@ -80,16 +80,18 @@ module Delayed
     end
 
     class Schedule
-      attr_accessor :jobs
+      attr_accessor :jobs, :logger
 
-      def initialize
+      def initialize(logger = nil)
         @jobs = {}
+        @logger = logger
       end
 
       def every(frequency, options={})
         # TODO: Support a more 'whenever'-style interface
         task = options[:run]
         raise ArgumentError, "'every' statement is missing the :run parameter." unless task
+        logger.info "Registered scheduled task '#{task}' every #{frequency.inspect}" if logger
         frequency = frequency.to_i
         @jobs[frequency] ||= []
         # second element indicates when the task was last queued. nil means never
