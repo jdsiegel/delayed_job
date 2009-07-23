@@ -16,8 +16,10 @@ h2. Changes in this fork (jdsiegel/delayed_job)
 
 This fork adds a new basic @Delayed::ScheduledWorker@ class that will queue repeatable jobs at regular intervals. Scheduled jobs are specified in @$RAILS_ROOT/config/delayed_schedule.rb@:
 
+<code>
   every 30.seconds, :run => 'Poller.refresh_data'
   every 20.minutes, :run => 'Report.update_stats'
+</code>
 
 To disable the job schedule, you can start delayed job with @script/delayed_job --disable-schedule start@.
 
