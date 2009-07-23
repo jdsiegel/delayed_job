@@ -12,7 +12,7 @@ It is a direct extraction from Shopify where the job table is responsible for a 
 * batch imports 
 * spam checks 
 
-h2. Changes in this fork (jdsiegel/delayed_job)
+== Changes in this fork (jdsiegel/delayed_job)
 
 This fork adds a new basic @Delayed::ScheduledWorker@ class that will queue repeatable jobs at regular intervals. Scheduled jobs are specified in @$RAILS_ROOT/config/delayed_schedule.rb@:
 
